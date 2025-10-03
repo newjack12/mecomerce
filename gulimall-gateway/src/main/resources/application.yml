@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: gulimall-gateway
+
+  config:
+    import: "optional:nacos:gulimall-gateway.yaml"
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        application:
+          name: gulimall-gateway
+      config:
+        server-addr: 127.0.0.1:8848
+        file-extension: yaml
+
+    gateway:
+      # 全局跨域配置
+      globalcors:
+        corsConfigurations:
+          '[/**]': # 对所有路由生效
+            allowedOrigins: "http://localhost:8001"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
+      routes:
+
+
+        - id: captcha_route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/captcha.jpg
+          filters:
+            - "RewritePath=/api/(.*), /renren-fast/$1"
+
+
+                # 登录接口
+        - id: login_route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/sys/**
+          filters:
+            - "RewritePath=/api/(.*), /renren-fast/$1"
+
+        # 其他 /api/** 请求
+        - id: api_route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/**
+          filters:
+            - "RewritePath=/api/(.*), /$1"
+
